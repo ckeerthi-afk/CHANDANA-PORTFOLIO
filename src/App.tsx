@@ -307,7 +307,7 @@ function Work() {
       <Project compact flowers i="03" href="#/welcome" n="Public sector · Ireland" title="A warm welcome from the state" result="Connecting fragmented services into one guided journey for new parents" ink="#0d0d0d"
                 bg="#dfe3fb" badge={<img src={govLogo} alt="Department of Public Expenditure, NDP Delivery and Reform" className="h-5 w-auto mix-blend-multiply" />} preview={<div className="origin-center scale-[0.8]"><PhonePreview /></div>} />
       <Project compact i="04" href="#/recipes" n="Service design · Ireland" title="Recipes to Adult" result="Making the transition from teenage years to adulthood simpler and better supported for Irish teens" timeline="5 months"
-                bg="#6d4fe0" badge={<div className="flex items-center"><img src={govLogo} alt="Department of Public Expenditure, NDP Delivery and Reform" className="h-5 w-auto mix-blend-multiply" /></div>} preview={<div className="relative h-[clamp(260px,26vw,340px)] w-full"><figure className="absolute w-[clamp(100px,12vw,140px)] bg-white p-1.5 pb-6 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition duration-700 ease-[cubic-bezier(.22,1,.36,1)] left-[22%] top-[30%] -rotate-[7deg] group-hover:-rotate-[3deg] group-hover:-translate-x-1"><img src="/r2a/photo-7.jpg" alt="Strangers answering at the How to Adult board" className="aspect-square w-full object-cover object-[60%_50%]" /></figure><figure className="absolute w-[clamp(100px,12vw,140px)] bg-white p-1.5 pb-6 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition duration-700 ease-[cubic-bezier(.22,1,.36,1)] right-[22%] top-[36%] z-10 rotate-[6deg] group-hover:rotate-[3deg] group-hover:translate-x-1"><img src="/r2a/street-1.jpg" alt="Street research in Dublin" className="aspect-square w-full object-cover object-[65%_45%]" /></figure></div>} />
+                bg="#6d4fe0" badge={<div className="flex items-center"><img src={govLogo} alt="Department of Public Expenditure, NDP Delivery and Reform" className="h-5 w-auto mix-blend-multiply" /></div>} preview={<div className="relative h-[clamp(260px,26vw,340px)] w-full"><figure className="absolute w-[clamp(100px,12vw,140px)] bg-white p-1.5 pb-6 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition duration-700 ease-[cubic-bezier(.22,1,.36,1)] left-[22%] top-[30%] -rotate-[7deg] group-hover:-rotate-[3deg] group-hover:-translate-x-1"><img src="/r2a/photo-7.jpg" alt="Strangers answering at the How to Adult board" className="aspect-square w-full object-cover object-[60%_50%]" /></figure><figure className="absolute w-[clamp(100px,12vw,140px)] bg-white p-1.5 pb-6 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition duration-700 ease-[cubic-bezier(.22,1,.36,1)] right-[22%] top-[36%] z-10 rotate-[6deg] group-hover:rotate-[3deg] group-hover:translate-x-1"><img src="/r2a/photo-8.jpg" alt="Street research in Dublin" className="aspect-square w-full object-cover object-[65%_45%]" /></figure></div>} />
       </div>
     </Section>
   )
@@ -387,14 +387,14 @@ function Skills() {
   )
 }
 
-const TESTIMONIALS = [
-  { n: 'Karen Gosciminski', r: 'Design Lead, IBM', loc: 'United States', tag: 'Design lead',
+const TESTIMONIALS: { n: string; r: string; loc: string; tag: string; q: string; img?: string }[] = [
+  { n: 'Karen Gosciminski', r: 'Design Lead, IBM', loc: 'United States', tag: 'Design lead', img: '/karen-gosciminski.jpg',
     q: "I was impressed by Chandana's ability to [take an unstructured competitive analysis effort and drive it forward]. She took initiative, organized the findings, engaged directly with competitor support, and delivered [clear, actionable recommendations] that were [critical to the project's success]." },
-  { n: 'Jenny Qiu', r: 'Senior Designer, IBM', loc: 'United States', tag: 'Senior designer',
+  { n: 'Jenny Qiu', r: 'Senior Designer, IBM', loc: 'United States', tag: 'Senior designer', img: '/jenny-qiu.jpg',
     q: 'Chandana consistently demonstrated [initiative, strong ownership, and effective communication]. She [proactively clarified requirements], incorporated feedback thoughtfully, and [collaborated effectively across teams] to keep work moving forward.' },
-  { n: 'Ester Monroy', r: 'Visual & Content Designer, IBM', loc: 'Ireland', tag: 'Designer',
+  { n: 'Ester Monroy', r: 'Visual & Content Designer, IBM', loc: 'Ireland', tag: 'Designer', img: '/ester-monroy.jpg',
     q: 'Chandana combines [strong visual design skills with a genuine growth mindset]. She consistently seeks feedback, embraces new challenges, and delivers [thoughtful, high-quality work]. Her collaborative approach and commitment to learning have made a [meaningful impact on the team and the product].' },
-  { n: 'Brijesh Jha', r: 'DGM, R&AE, Renault Nissan', loc: 'India', tag: 'Leadership',
+  { n: 'Brijesh Jha', r: 'DGM, R&AE, Renault Nissan', loc: 'India', tag: 'Leadership', img: '/brijesh-jha.jpg',
     q: 'During the time I worked with Chandana, I was consistently impressed by her ability to [approach complex problems with both curiosity and structure]. Rather than jumping directly into solutions, she takes the time to understand user needs, business goals, and system constraints before forming recommendations. What stood out most was her [product thinking]. Chandana demonstrated a strong ability to [connect research insights with practical design opportunities], particularly in areas such as onboarding, workflow simplification, and user adoption. She asks thoughtful questions, collaborates effectively across stakeholders, and is [willing to challenge assumptions] when advocating for a better user experience. Beyond her design skills, she brings a growth mindset and a genuine passion for learning. She actively seeks feedback, iterates quickly, and [consistently raises the quality of conversations] around product and customer experience. Chandana has the potential to become a [highly impactful Product Designer], and I would be excited to see how her career continues to grow.' },
 ]
 
@@ -415,15 +415,20 @@ function Testimonials() {
           {TESTIMONIALS.map((t, i) => {
             const on = open === i
             return (
-              <article key={t.n} className="group flex w-[min(86vw,420px)] shrink-0 snap-start flex-col border border-line bg-white p-7 transition duration-300 hover:border-ink">
+              <article key={t.n} className="group flex w-[min(86vw,420px)] shrink-0 snap-start flex-col rounded-3xl border border-line bg-white p-7 transition duration-300 hover:border-ink">
                 <div className="flex items-start justify-between">
                   <span aria-hidden className="font-serif text-[64px] leading-[0.6]" style={{ color: 'var(--h-openHalo)' }}>“</span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{String(i + 1).padStart(2, '0')} / {t.tag}</span>
+                  <span className="flex items-center gap-2.5">
+                    <span className="font-mono text-[11px] tracking-[0.12em] text-muted">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.01em] text-ink" style={{ background: 'color-mix(in srgb, var(--h-petal) 40%, white)', boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--h-ring) 22%, transparent)' }}>{t.tag}</span>
+                  </span>
                 </div>
                 <p className={`mt-6 text-[17px] leading-[1.75] text-muted ${on ? '' : 'line-clamp-6'}`}><Quote text={t.q} /></p>
                 <button onClick={() => setOpen(on ? null : i)} className="mb-6 mt-4 self-start text-sm font-medium underline decoration-1 underline-offset-4 transition hover:opacity-70" style={{ color: 'var(--h-ring)' }}>{on ? 'Show less' : 'Read more'}</button>
                 <div className="mt-auto flex items-center gap-4 border-t border-line pt-5">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center text-sm font-semibold text-white" style={{ background: 'var(--h-openHalo)' }}>{t.n.split(' ').map((w) => w[0]).join('')}</span>
+                  {t.img
+                    ? <img src={t.img} alt={t.n} loading="lazy" className="h-11 w-11 shrink-0 rounded-full object-cover" />
+                    : <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-semibold text-white" style={{ background: 'var(--h-openHalo)' }}>{t.n.split(' ').map((w) => w[0]).join('')}</span>}
                   <div className="min-w-0">
                     <p className="font-semibold tracking-tight">{t.n}</p>
                     <p className="text-sm text-muted">{t.r} · {t.loc}</p>

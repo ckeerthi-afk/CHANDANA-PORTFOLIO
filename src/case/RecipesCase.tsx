@@ -235,7 +235,7 @@ function Streets() {
       </div>
       <div className="mt-16 grid gap-4 md:grid-cols-12 md:grid-rows-[260px_260px]">
         <figure className="reveal group relative overflow-hidden rounded-3xl md:col-span-5 md:row-span-2">
-          <img src="/r2a/street-1.jpg" alt="Chandana beside the How to Adult board on a Dublin street" loading="lazy" className="h-[460px] w-full object-cover object-[50%_35%] transition duration-[1200ms] group-hover:scale-105 md:h-full" />
+          <img src="/r2a/chandana-board.jpg" alt="Chandana beside the How to Adult board on a Dublin street" loading="lazy" className="h-[460px] w-full object-cover object-[50%_35%] transition duration-[1200ms] group-hover:scale-105 md:h-full" />
           <Hand className="absolute bottom-5 left-5 rounded-full bg-white/90 px-4 py-1.5 text-xl">the board, and one very proud designer</Hand>
         </figure>
         <figure className="reveal group relative overflow-hidden rounded-3xl md:col-span-4">

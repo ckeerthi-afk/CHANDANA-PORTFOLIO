@@ -76,7 +76,7 @@ export default function Garden({ onBloom }: { onBloom: (b: Bloom | null) => void
         el('line', { x1, y1, x2: x1 + dx * 0.92, y2: y1 + dy * 0.92, stroke: C.stem, 'stroke-width': 2.5, 'stroke-linecap': 'round' }))
     }
 
-    function Flower(x: number, y: number, s: number, pinned: boolean, onHover?: (on: boolean) => void) {
+    function Flower(x: number, y: number, s: number, onHover?: (on: boolean) => void) {
       const corners = Array.from({ length: 5 }, (_, i) => polar(x, y, 19 * s, i * 72))
       const g = el('g', { class: 'flower' })
       const glow = el('circle', { cx: x, cy: y, fill: 'url(#flower-glow)', 'pointer-events': 'none' }, { transition: `r 900ms ${EASE}, opacity 900ms ${EASE}` })
@@ -93,10 +93,12 @@ export default function Garden({ onBloom }: { onBloom: (b: Bloom | null) => void
         el('circle', { cx: x, cy: y, r: 2.4 * s, fill: '#eef1cc' }))
       const motion = (n: SVGElement, on: boolean, rot: number) => { n.style.transform = on ? 'scale(1) rotate(0deg)' : `scale(0.3) rotate(${rot}deg)`; n.style.opacity = on ? '1' : '0' }
       const render = (open: boolean) => { glow.setAttribute('r', String((open ? 34 : 28) * s)); glow.style.opacity = open ? '1' : '0.7'; motion(bud, !open, 0); motion(bloom as SVGElement, open, -72) }
-      render(pinned)
-      g.addEventListener('mouseenter', () => { render(true); onHover?.(true) })
-      g.addEventListener('mouseleave', () => { render(pinned); onHover?.(false) })
-      return add(g, el('circle', { cx: x, cy: y, r: 28 * s, fill: 'transparent' }), glow, bud, bloom)
+      render(false)
+      if (onHover) {
+        g.addEventListener('mouseenter', () => onHover(true))
+        g.addEventListener('mouseleave', () => onHover(false))
+      } else g.style.cursor = 'default'
+      return { node: add(g, el('circle', { cx: x, cy: y, r: 28 * s, fill: 'transparent' }), glow, bud, bloom), setOpen: render }
     }
 
     type Tag = { x: number; y: number; side: number; edge: number; n: number }
@@ -120,22 +122,57 @@ export default function Garden({ onBloom }: { onBloom: (b: Bloom | null) => void
         text)
     }
 
-    function Umbel(cx: number, cy: number, points: number[][], labels: (number | null)[], pinned: number[], s: number, reach: number, onHover: (t: Tag | null) => void) {
+    // Exactly two flowers are open at once. Every few seconds the older one closes and a
+    // new one opens on the opposite side, so the two labels never collide.
+    function Umbel(cx: number, cy: number, points: number[][], labels: (number | null)[], initial: number[], s: number, reach: number, onHover: (t: Tag | null) => void) {
       const tagFor = (i: number): Tag | null => { const n = labels[i]; if (n == null) return null; const [x, y] = points[i]; return { x, y, side: x < cx ? -1 : 1, edge: cx + (x < cx ? -reach : reach), n } }
+      const side = (i: number) => (points[i][0] < cx ? -1 : 1)
       const g = el('g', { class: 'umbel-sway' }, { 'transform-origin': `${cx}px ${cy - 120}px`, 'animation-duration': (cx % 3 ? 8 : 10) + 's' })
       points.forEach((p) => g.appendChild(el('line', { x1: cx, y1: cy, x2: p[0], y2: p[1], stroke: C.stem, 'stroke-width': 2, 'stroke-opacity': 0.5 })))
-      g.appendChild(Flower(cx, cy, s * 0.8, false))
+      g.appendChild(Flower(cx, cy, s * 0.8).node)
+      const flowers: ReturnType<typeof Flower>[] = []
+      const tags = new Map<number, Element>()
+      let open: number[] = []
+      let paused = false
+      const close = (i: number) => {
+        flowers[i].setOpen(false)
+        const label = tags.get(i)
+        if (label) { (label as SVGElement).style.transition = 'opacity 400ms'; (label as SVGElement).style.opacity = '0'; setTimeout(() => label.remove(), 400); tags.delete(i) }
+        open = open.filter((k) => k !== i)
+      }
+      const openFlower = (i: number, detail = false) => {
+        const t = tagFor(i)
+        if (!t) return
+        if (open.includes(i)) { if (!detail) return; tags.get(i)?.remove() }
+        else {
+          const victim = open.find((k) => side(k) === side(i)) ?? (open.length >= 2 ? open[0] : undefined)
+          if (victim !== undefined) close(victim)
+          flowers[i].setOpen(true)
+          open.push(i)
+        }
+        const label = Label(t, detail); tags.set(i, label); g.appendChild(label)
+      }
       points.forEach(([x, y], i) => {
         const d = Math.hypot(x - cx, y - cy), deg = (Math.atan2(y - cy, x - cx) * 180) / Math.PI
         const k = 1 - 0.25 * Math.min(1, Math.max(0, (d - (60 * s) / 1.5) / ((100 * s) / 1.5)))
-        const isPinned = pinned.includes(i)
         const outer = el('g', { transform: `translate(${x} ${y}) rotate(${deg}) scale(${k} 1) rotate(${-deg}) translate(${-x} ${-y})` })
         const drift = el('g', { class: 'flower-drift' }, { 'animation-duration': 5 + ((i * 7) % 4) + 's', 'animation-delay': -((i * 1.3) % 6) + 's' })
-        drift.appendChild(Flower(x, y, s, isPinned, (on) => onHover(on ? tagFor(i) : null)))
+        flowers[i] = Flower(x, y, s, labels[i] == null ? undefined : (on) => {
+          paused = on
+          if (on) openFlower(i, true)
+          onHover(on ? tagFor(i) : null)
+        })
+        drift.appendChild(flowers[i].node)
         g.appendChild(add(outer, drift))
       })
-      pinned.forEach((i) => { const t = tagFor(i); if (t) g.appendChild(Label(t)) })
-      return g
+      initial.forEach((i) => openFlower(i))
+      const cycle = () => {
+        if (paused) return
+        const keep = open[open.length - 1]
+        const pool = points.map((_, i) => i).filter((i) => labels[i] != null && !open.includes(i) && (keep === undefined || side(i) !== side(keep)))
+        if (pool.length) openFlower(pool[Math.floor(Math.random() * pool.length)])
+      }
+      return { node: g, cycle }
     }
     function ring(cx: number, cy: number, r: number, n: number, off = 0, from = 0, to = 360) {
       return Array.from({ length: n }, (_, i) => { const a = ((from + ((to - from) * (i + off)) / (to - from === 360 ? n : n - 1)) * Math.PI) / 180; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r] })
@@ -167,13 +204,18 @@ export default function Garden({ onBloom }: { onBloom: (b: Bloom | null) => void
     const stems = el('g', { fill: 'none', stroke: C.stem, 'stroke-width': 3, 'stroke-linecap': 'round' })
     ;['M685,170 Q640,180 605,210 L490,315 L495,655', 'M115,360 Q300,375 390,360 L490,315'].forEach((d) => stems.appendChild(el('path', { d })))
     branch.appendChild(stems)
-    let current: Element | null = null
-    const setTag = (t: Tag | null) => {
-      current?.remove(); current = null
-      if (t) { current = Label(t, true); branch.appendChild(current); cb.current(BLOOMS[SKILLS[t.n]]) } else cb.current(null)
-    }
-    branch.appendChild(Umbel(495, 655, upper, L[0], PINNED.upper, 1.8, 260, setTag))
+    const setTag = (t: Tag | null) => cb.current(t ? BLOOMS[SKILLS[t.n]] : null)
+    const umbel = Umbel(495, 655, upper, L[0], PINNED.upper, 1.8, 260, setTag)
+    branch.appendChild(umbel.node)
     art.appendChild(branch)
+
+    // Cycle blooms every few seconds while the garden is on screen; stay still for reduced motion.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let visible = false
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting })
+    io.observe(art)
+    const timer = window.setInterval(() => { if (visible && !document.hidden) umbel.cycle() }, 3000)
+    return () => { window.clearInterval(timer); io.disconnect() }
   }, [])
 
   return (
